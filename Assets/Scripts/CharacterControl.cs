@@ -2,11 +2,11 @@ using UnityEngine;
 
 public class CharacterControl : MonoBehaviour
 {
-    public float moveSpeed = 5f;  // Player movement speed
-    public float rotationSpeed = 720f;  // Speed of rotation to face movement direction
-    private Vector2 movementInput;  // Store movement input
-    private Rigidbody rb;  // 3D Rigidbody component
-    private PlayerControl inputActions;  // Reference to input actions
+    public float moveSpeed = 5f;  
+    public float rotationSpeed = 720f;  
+    private Vector2 movementInput;  
+    private Rigidbody rb;  
+    private PlayerControl inputActions;  
 
     void Awake()
     {
