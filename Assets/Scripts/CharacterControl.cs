@@ -1,50 +1,94 @@
 using UnityEngine;
+using System.Collections;
 
 public class CharacterControl : MonoBehaviour
 {
     public float moveSpeed = 5f;  
     public float rotationSpeed = 720f;  
+
+    public float rollSpeed = 12f;              
+    public float rollDuration = 0.5f;          
+    public float rollCooldown = 1f;   
+    private bool isRolling = false;            
+    private bool canRoll = true;  
+
     private Vector2 movementInput;  
     private Rigidbody rb;  
     private PlayerControl inputActions;  
+    private Animator animator;
 
     void Awake()
     {
-        // Initialize the new input system actions
         inputActions = new PlayerControl();
-        
-        // Subscribe to the "Move" action
         inputActions.Player.Move.performed += ctx => movementInput = ctx.ReadValue<Vector2>();
         inputActions.Player.Move.canceled += ctx => movementInput = Vector2.zero;
 
-        rb = GetComponent<Rigidbody>();  // Get the Rigidbody component (3D)
+        inputActions.Player.Roll.performed += ctx => StartRoll();
+
+        rb = GetComponent<Rigidbody>();  
+        animator = gameObject.transform.GetChild(0).GetComponent<Animator>();
     }
 
     void OnEnable()
     {
-        // Enable the input actions
         inputActions.Player.Enable();
     }
 
     void OnDisable()
     {
-        // Disable the input actions
         inputActions.Player.Disable();
     }
 
     void FixedUpdate()
     {
-        // Convert 2D input (X, Y) into 3D movement (X, Z)
         Vector3 moveDirection = new Vector3(movementInput.x, 0f, movementInput.y).normalized;
         
-        // Move the player in the direction of input
         rb.MovePosition(rb.position + moveDirection * moveSpeed * Time.fixedDeltaTime);
 
-        // Rotate the player to face the movement direction
         if (moveDirection != Vector3.zero)
         {
             Quaternion toRotation = Quaternion.LookRotation(moveDirection, Vector3.up);
             rb.rotation = Quaternion.RotateTowards(rb.rotation, toRotation, rotationSpeed * Time.fixedDeltaTime);
+        
+            animator.SetBool("isMoving", true);
+        
         }
+        else{
+            animator.SetBool("isMoving", false);
+        }
+    }
+
+    private void StartRoll()
+    {
+        if (canRoll && movementInput != Vector2.zero)  
+        {
+            StartCoroutine(RollCoroutine());
+        }
+    }
+
+    private IEnumerator RollCoroutine()
+    {
+        isRolling = true;
+        canRoll = false;
+
+        Vector3 rollDirection = new Vector3(movementInput.x, 0f, movementInput.y).normalized;
+        
+        
+        animator.SetTrigger("Roll");
+
+
+       
+        float timer = 0f;
+        while (timer < rollDuration)
+        {
+            rb.MovePosition(rb.position + rollDirection * rollSpeed * Time.fixedDeltaTime);
+            timer += Time.fixedDeltaTime;
+            yield return null;
+        }
+
+        isRolling = false;
+
+        yield return new WaitForSeconds(rollCooldown);
+        canRoll = true;
     }
 }
