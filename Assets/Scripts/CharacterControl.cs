@@ -3,19 +3,17 @@ using System.Collections;
 
 public class CharacterControl : MonoBehaviour
 {
-    public float moveSpeed = 5f;  
-    public float rotationSpeed = 720f;  
+    public CharacterSettingSO settings;     //
 
-    public float rollSpeed = 12f;              
-    public float rollDuration = 0.5f;          
-    public float rollCooldown = 1f;   
-    private bool isRolling = false;            
     private bool canRoll = true;  
 
     private Vector2 movementInput;  
     private Rigidbody rb;  
     private PlayerControl inputActions;  
     private Animator animator;
+
+    int isMovingHash = Animator.StringToHash("isMoving");
+    int isRollingHash = Animator.StringToHash("Roll");
 
     void Awake()
     {
@@ -27,6 +25,7 @@ public class CharacterControl : MonoBehaviour
 
         rb = GetComponent<Rigidbody>();  
         animator = gameObject.transform.GetChild(0).GetComponent<Animator>();
+
     }
 
     void OnEnable()
@@ -43,18 +42,17 @@ public class CharacterControl : MonoBehaviour
     {
         Vector3 moveDirection = new Vector3(movementInput.x, 0f, movementInput.y).normalized;
         
-        rb.MovePosition(rb.position + moveDirection * moveSpeed * Time.fixedDeltaTime);
+        rb.MovePosition(rb.position + moveDirection * settings.moveSpeed * Time.fixedDeltaTime);
 
         if (moveDirection != Vector3.zero)
         {
             Quaternion toRotation = Quaternion.LookRotation(moveDirection, Vector3.up);
-            rb.rotation = Quaternion.RotateTowards(rb.rotation, toRotation, rotationSpeed * Time.fixedDeltaTime);
+            rb.rotation = Quaternion.RotateTowards(rb.rotation, toRotation, settings.rotationSpeed * Time.fixedDeltaTime);
         
-            animator.SetBool("isMoving", true);
-        
+            animator.SetBool(isMovingHash, true); 
         }
         else{
-            animator.SetBool("isMoving", false);
+            animator.SetBool(isMovingHash, false); //
         }
     }
 
@@ -68,27 +66,22 @@ public class CharacterControl : MonoBehaviour
 
     private IEnumerator RollCoroutine()
     {
-        isRolling = true;
         canRoll = false;
 
         Vector3 rollDirection = new Vector3(movementInput.x, 0f, movementInput.y).normalized;
         
-        
-        animator.SetTrigger("Roll");
-
-
+        animator.SetTrigger(isRollingHash);
        
         float timer = 0f;
-        while (timer < rollDuration)
+        while (timer < settings.rollDuration)
         {
-            rb.MovePosition(rb.position + rollDirection * rollSpeed * Time.fixedDeltaTime);
+            rb.MovePosition(rb.position + rollDirection * settings.rollSpeed * Time.fixedDeltaTime);
             timer += Time.fixedDeltaTime;
             yield return null;
         }
 
-        isRolling = false;
 
-        yield return new WaitForSeconds(rollCooldown);
+        yield return new WaitForSeconds(settings.rollCooldown);
         canRoll = true;
     }
 }

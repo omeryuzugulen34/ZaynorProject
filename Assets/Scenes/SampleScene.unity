@@ -1463,11 +1463,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 96f659818a8c84ad195673f3c5018c13, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 3
-  rotationSpeed: 500
-  rollSpeed: 5
-  rollDuration: 0.1
-  rollCooldown: 1
+  settings: {fileID: 11400000, guid: 72f5f7ab770e94134b554fd27a27d644, type: 2}
 --- !u!64 &1949311193
 MeshCollider:
   m_ObjectHideFlags: 0
