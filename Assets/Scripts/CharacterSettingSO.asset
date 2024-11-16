@@ -17,3 +17,6 @@ MonoBehaviour:
   rollSpeed: 1
   rollDuration: 0.5
   rollCooldown: 1
+  lightAttackDamage: 10
+  heavyAttackDamage: 25
+  attackCooldown: 0
