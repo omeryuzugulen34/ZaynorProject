@@ -2,71 +2,59 @@ using UnityEngine;
 
 public class TargetingSystem : MonoBehaviour
 {
-   public Transform currentTarget;
-    public float lockOnRange = 10f; 
-
+    public Transform currentTarget;
+    public float targetingRange = 10f;
     public LayerMask enemyLayer;
 
-    void Update()
+    private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Tab)) 
-        {
-            LockOnTarget();
-        }
+        UpdateClosestTarget();
 
         if (currentTarget != null)
         {
-            
-            RotateTowardTarget();
+           // HighlightTarget(currentTarget, true);
         }
     }
 
-    void LockOnTarget()
+    private void UpdateClosestTarget()
     {
-     
-        Collider[] enemiesInRange = Physics.OverlapSphere(transform.position, lockOnRange, enemyLayer);
+        Collider[] colliders = Physics.OverlapSphere(transform.position, targetingRange, enemyLayer);
 
-        if (enemiesInRange.Length > 0)
+        Transform closestEnemy = null;
+        float closestDistance = Mathf.Infinity;
+
+        foreach (var collider in colliders)
         {
-            Transform nearestEnemy = null;
-            float closestDistance = Mathf.Infinity;
-
-          
-            foreach (Collider enemy in enemiesInRange)
+            float distance = Vector3.Distance(transform.position, collider.transform.position);
+            if (distance < closestDistance)
             {
-                float distanceToEnemy = Vector3.Distance(transform.position, enemy.transform.position);
-                if (distanceToEnemy < closestDistance)
-                {
-                    closestDistance = distanceToEnemy;
-                    nearestEnemy = enemy.transform;
-                }
+                closestDistance = distance;
+                closestEnemy = collider.transform;
+            }
+        }
+
+        if (currentTarget != closestEnemy)
+        {
+            if (currentTarget != null)
+            {
+               // HighlightTarget(currentTarget, false);
             }
 
-     
-            currentTarget = nearestEnemy;
-            Debug.Log($"Locked onto: {currentTarget.name}");
-        }
-        else
-        {
-            // No enemies in range
-            currentTarget = null;
-            Debug.Log("No target found.");
+            currentTarget = closestEnemy;
+            if (currentTarget != null)
+            {
+                Debug.Log($"New target acquired: {currentTarget.name}");
+            }
         }
     }
 
-    void RotateTowardTarget()
-    {
-        if (currentTarget == null) return;
-
-        Vector3 direction = (currentTarget.position - transform.position).normalized;
-        Quaternion lookRotation = Quaternion.LookRotation(new Vector3(direction.x, 0f, direction.z));
-        transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * 5f);
-    }
-
-    void OnDrawGizmosSelected()
-    {
-     
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, lockOnRange);
-    }
+    // private void HighlightTarget(Transform target, bool highlight)
+    // {
+    //     Renderer renderer = target.GetComponent<Renderer>();
+    //     if (renderer != null)
+    //     {
+    //         renderer.material.color = highlight ? Color.yellow : Color.white;
+    //     }
+    // }
+    
 }

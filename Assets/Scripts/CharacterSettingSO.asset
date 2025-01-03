@@ -19,4 +19,4 @@ MonoBehaviour:
   rollCooldown: 1
   lightAttackDamage: 10
   heavyAttackDamage: 25
-  attackCooldown: 0
+  attackCooldown: 1
