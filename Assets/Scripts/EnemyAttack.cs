@@ -3,12 +3,18 @@ using System.Collections;
 
 public class EnemyAttack : MonoBehaviour
 {
-    public float attackRange = 1f;  // Range within which the enemy can attack
-    public float attackDamage = 10f;  // Damage dealt per attack
-    public float attackCooldown = 1.5f;  // Time between attacks
-    public float knockbackForce = 5f;  // Force to push the enemy back when hit
+    [Header("Attack Settings")]
+    public float attackRange = 5f; // Radius within which the enemy stops and attacks
+    public float followRange = 10f; // Radius within which the enemy follows the player
+    public float attackDamage = 10f; // Damage dealt per attack
+    public float attackCooldown = 1.5f; // Time between attacks
 
-    private Transform player;  // Reference to the player's transform
+    [Header("Fireball Settings")]
+    public GameObject fireballPrefab; // Fireball prefab to spawn
+    public Transform fireballSpawnPoint; // Child transform where the fireball will spawn
+    public float fireballSpeed = 10f; // Speed of the fireball
+
+    private Transform player; // Reference to the player's transform
     private bool canAttack = true;
     private Renderer enemyRenderer;
     private Color originalColor;
@@ -30,58 +36,82 @@ public class EnemyAttack : MonoBehaviour
 
         float distanceToPlayer = Vector3.Distance(transform.position, player.position);
 
-        // Check if within attack range
         if (distanceToPlayer <= attackRange)
         {
-            if (canAttack)
-            {
-                StartCoroutine(AttackPlayer());
-            }
+            // Within attack range, stop and attack
+            StopAndAttack();
+        }
+        else if (distanceToPlayer <= followRange)
+        {
+            // Within follow range, chase the player
+            ChasePlayer();
         }
         else
         {
-            // Move toward the player
-            ChasePlayer();
+            // Out of follow range, stop chasing
+            StopChasing();
         }
+    }
+
+    private void StopAndAttack()
+    {
+        // Stop moving
+        rb.linearVelocity = Vector3.zero;
+
+        // Face the player
+        transform.LookAt(new Vector3(player.position.x, transform.position.y, player.position.z));
+
+        // Attack the player
+        if (canAttack)
+        {
+            StartCoroutine(ShootFireball());
+        }
+    }
+
+    private IEnumerator ShootFireball()
+    {
+        canAttack = false;
+
+    // Spawn the fireball
+    if (fireballPrefab != null && fireballSpawnPoint != null)
+    {
+        GameObject fireball = Instantiate(fireballPrefab, fireballSpawnPoint.position, fireballSpawnPoint.rotation);
+
+        // Add velocity to the fireball
+        Rigidbody fireballRb = fireball.GetComponent<Rigidbody>();
+        if (fireballRb != null)
+        {
+            fireballRb.linearVelocity = fireballSpawnPoint.forward * fireballSpeed;
+        }
+    }
+
+    // Cooldown before the next attack
+    yield return new WaitForSeconds(attackCooldown);
+    canAttack = true;
     }
 
     private void ChasePlayer()
     {
         Vector3 direction = (player.position - transform.position).normalized;
-        transform.position += direction * Time.deltaTime;
+        rb.MovePosition(rb.position + direction * Time.deltaTime);
         transform.LookAt(new Vector3(player.position.x, transform.position.y, player.position.z));
     }
 
-    private IEnumerator AttackPlayer()
+    private void StopChasing()
     {
-        canAttack = false;
-
-        // Simulate an attack (add an animation trigger here if needed)
-        Debug.Log("Enemy attacks the player!");
-
-        // Check if the player has a Health component and apply damage
-        Health playerHealth = player.GetComponent<Health>();
-        if (playerHealth != null)
-        {
-            playerHealth.TakeDamage(attackDamage);
-        }
-
-        // Wait for the cooldown before allowing another attack
-        yield return new WaitForSeconds(attackCooldown);
-        canAttack = true;
+        rb.linearVelocity = Vector3.zero; // Stop the enemy
     }
 
     public void TakeDamage(float damage, Vector3 knockbackDirection)
     {
         Debug.Log($"{name} is taking {damage} damage!");
-        // Flash red to indicate damage
         if (!isFlashing)
         {
             StartCoroutine(FlashRed());
         }
 
         // Apply knockback
-        rb.AddForce(knockbackDirection * knockbackForce, ForceMode.Impulse);
+        rb.AddForce(knockbackDirection * 5f, ForceMode.Impulse);
 
         // Reduce health (assuming Health script is attached)
         Health health = GetComponent<Health>();
@@ -108,7 +138,12 @@ public class EnemyAttack : MonoBehaviour
 
     void OnDrawGizmosSelected()
     {
+        // Draw the attack range
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, attackRange);
-    }  
+
+        // Draw the follow range
+        Gizmos.color = Color.blue;
+        Gizmos.DrawWireSphere(transform.position, followRange);
+    }
 }
