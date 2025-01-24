@@ -409,6 +409,7 @@ MonoBehaviour:
   followRange: 6.52
   attackDamage: 10
   attackCooldown: 1.5
+  knockbackForce: 5
   fireballPrefab: {fileID: 386058043203909745, guid: aa30a68fec5834ef096b9718dbe463ca, type: 3}
   fireballSpawnPoint: {fileID: 2557652642430043748}
   fireballSpeed: 6

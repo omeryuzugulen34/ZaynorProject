@@ -55,12 +55,33 @@ ModelImporter:
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
       curves: []
       events:
-      - time: 0.7608894
-        functionName: OnComboAttackEvent
+      - time: 0.2706174
+        functionName: ComboPunch
         data: 
         objectReferenceParameter: {fileID: 11500000, guid: 96f659818a8c84ad195673f3c5018c13, type: 3}
         floatParameter: 0
-        intParameter: 0
+        intParameter: 1
+        messageOptions: 0
+      - time: 0.3995613
+        functionName: ComboPunch
+        data: 
+        objectReferenceParameter: {fileID: 11500000, guid: 96f659818a8c84ad195673f3c5018c13, type: 3}
+        floatParameter: 0
+        intParameter: 2
+        messageOptions: 0
+      - time: 0.5037406
+        functionName: ComboPunch
+        data: 
+        objectReferenceParameter: {fileID: 11500000, guid: 96f659818a8c84ad195673f3c5018c13, type: 3}
+        floatParameter: 0
+        intParameter: 3
+        messageOptions: 0
+      - time: 0.61596006
+        functionName: ComboPunch
+        data: 
+        objectReferenceParameter: {fileID: 11500000, guid: 96f659818a8c84ad195673f3c5018c13, type: 3}
+        floatParameter: 0
+        intParameter: 4
         messageOptions: 0
       transformMask: []
       maskType: 3

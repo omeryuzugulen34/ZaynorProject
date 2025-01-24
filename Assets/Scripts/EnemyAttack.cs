@@ -8,6 +8,7 @@ public class EnemyAttack : MonoBehaviour
     public float followRange = 10f; // Radius within which the enemy follows the player
     public float attackDamage = 10f; // Damage dealt per attack
     public float attackCooldown = 1.5f; // Time between attacks
+    public float knockbackForce = 10f;  // Force to push the enemy back when hit
 
     [Header("Fireball Settings")]
     public GameObject fireballPrefab; // Fireball prefab to spawn
@@ -25,12 +26,12 @@ public class EnemyAttack : MonoBehaviour
     void Start()
     {
         player = GameObject.FindGameObjectWithTag("Player").transform;
-        enemyRenderer = GetComponent<Renderer>();
+        enemyRenderer = gameObject.transform.GetChild(0).GetChild(0).transform.gameObject.GetComponent<Renderer>();
         originalColor = enemyRenderer.material.color;
         rb = GetComponent<Rigidbody>();
     }
 
-    void Update()
+   void Update()
     {
         if (player == null) return;
 
@@ -68,9 +69,42 @@ public class EnemyAttack : MonoBehaviour
         }
     }
 
-    private IEnumerator ShootFireball()
+    private void ChasePlayer()
     {
-        canAttack = false;
+        Vector3 direction = (player.position - transform.position).normalized;
+        rb.MovePosition(rb.position + direction * Time.deltaTime);
+        transform.LookAt(new Vector3(player.position.x, transform.position.y, player.position.z));
+    }
+
+    private void StopChasing()
+    {
+        rb.linearVelocity = Vector3.zero; // Stop the enemy
+    }
+
+    public void TakeDamage(float damage, Vector3 knockbackDirection)
+    {
+        Debug.Log($"{name} is taking {damage} damage!");
+        // Flash red to indicate damage
+        if (!isFlashing)
+        {
+            StartCoroutine(FlashRed());
+        }
+
+        // Apply knockback
+        rb.AddForce(knockbackDirection * knockbackForce, ForceMode.Impulse);
+
+        // Reduce health (assuming Health script is attached)
+        Health health = GetComponent<Health>();
+        if (health != null)
+        {
+            health.TakeDamage(damage);
+        }
+    }
+
+
+    private IEnumerator ShootFireball()
+{
+    canAttack = false;
 
     // Spawn the fireball
     if (fireballPrefab != null && fireballSpawnPoint != null)
@@ -88,38 +122,7 @@ public class EnemyAttack : MonoBehaviour
     // Cooldown before the next attack
     yield return new WaitForSeconds(attackCooldown);
     canAttack = true;
-    }
-
-    private void ChasePlayer()
-    {
-        Vector3 direction = (player.position - transform.position).normalized;
-        rb.MovePosition(rb.position + direction * Time.deltaTime);
-        transform.LookAt(new Vector3(player.position.x, transform.position.y, player.position.z));
-    }
-
-    private void StopChasing()
-    {
-        rb.linearVelocity = Vector3.zero; // Stop the enemy
-    }
-
-    public void TakeDamage(float damage, Vector3 knockbackDirection)
-    {
-        Debug.Log($"{name} is taking {damage} damage!");
-        if (!isFlashing)
-        {
-            StartCoroutine(FlashRed());
-        }
-
-        // Apply knockback
-        rb.AddForce(knockbackDirection * 5f, ForceMode.Impulse);
-
-        // Reduce health (assuming Health script is attached)
-        Health health = GetComponent<Health>();
-        if (health != null)
-        {
-            health.TakeDamage(damage);
-        }
-    }
+}
 
     private IEnumerator FlashRed()
     {

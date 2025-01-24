@@ -6,6 +6,7 @@ public class CharacterControl : MonoBehaviour
     public CharacterSettingSO settings;
 
     private TargetingSystem targetingSystem;
+    private AnimEventManager animEventManager;
 
     private bool canRoll = true;
     private bool canAttack = true;
@@ -22,7 +23,7 @@ public class CharacterControl : MonoBehaviour
     int isHeavyAttackHash = Animator.StringToHash("HeavyAttack");
 
     public enum AttackType { Light, Heavy }
-
+    float damage;
     
 
     void Awake()
@@ -40,7 +41,7 @@ public class CharacterControl : MonoBehaviour
         animator = gameObject.transform.GetChild(0).GetComponent<Animator>();
 
         targetingSystem = GetComponent<TargetingSystem>();
-
+        animEventManager = gameObject.transform.GetChild(0).gameObject.GetComponent<AnimEventManager>();
     }
 
     void OnEnable()
@@ -94,13 +95,17 @@ public class CharacterControl : MonoBehaviour
         {
             RotateTowardsMouse();
         }
-        float damage = attackType == AttackType.Light ? settings.lightAttackDamage : settings.heavyAttackDamage;
+        damage = attackType == AttackType.Light ? settings.lightAttackDamage : settings.heavyAttackDamage;
         int attackHash = attackType == AttackType.Light ? isLightAttackHash : isHeavyAttackHash;
 
         animator.SetTrigger(attackHash);
         StartCoroutine(AttackCooldown());
         StartCoroutine(EndAttackAfterAnimation());
 
+        
+    }
+
+    public void HandleAttack(){
         if (targetingSystem.currentTarget != null)
         {
             EnemyAttack enemy = targetingSystem.currentTarget.GetComponent<EnemyAttack>();
